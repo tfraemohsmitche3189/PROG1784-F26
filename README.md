@@ -37,8 +37,14 @@ Linux containers. Platform verification limits are listed under [Validation](#va
 
 ### 2. Install and start a container engine
 
-Choose one engine and make it available to VS Code through the **`docker`
-executable**. Installing both engines is unnecessary.
+**Docker is the default.** Choose one engine; installing both is unnecessary.
+**Already using Podman?** With a working Docker-compatible CLI and Compose,
+the unchanged repository uses Podman: no VS Code or repository edits are needed.
+Follow [Podman with no repository changes](.devcontainer/CONTAINER_ENGINE.md#podman-with-no-repository-changes)
+for Linux packages, Podman Desktop setup, and the checks to run before `code .`.
+Installing Podman alone is insufficient; the compatibility command must exist
+and point to its engine. A separate [direct Podman option](.devcontainer/CONTAINER_ENGINE.md#alternative-select-podman-explicitly)
+is documented for users who prefer to change VS Code and the startup hook.
 
 | Your computer | Docker route | Podman route |
 | --- | --- | --- |
@@ -59,7 +65,8 @@ devcontainer. Check engine access from that same WSL environment. If working
 from a Windows folder instead, ensure the engine can share that folder. On
 macOS, allow the container VM access to the checkout when prompted.
 
-**Host terminal, from any folder** — check the engine before continuing:
+**Host terminal, from any folder** — for the default Docker or Docker-compatible
+route, check the engine before continuing:
 
 ```text
 docker info
@@ -70,7 +77,8 @@ Both commands must succeed. `docker info` must reach the running engine; seeing
 only a Docker client version is not enough. A Podman compatibility notice is
 normal. If either command fails, start the engine/machine and finish its CLI or
 Compose setup before opening the devcontainer. In VS Code, leave **Dev Containers:
-Docker Path** set to `docker`.
+Docker Path** set to `docker` for this route. For direct Podman, use the linked
+switch instructions and verify `podman info` / `podman compose version` instead.
 
 ### 3. Install VS Code and get the course repository
 
@@ -555,7 +563,11 @@ as well. Version tags, the Python base image tag, and model tags can change upst
 
 ## Docker and Podman on Linux, macOS, and Windows
 
-The same devcontainer calls the **`docker` executable** for both engines:
+The checked-in configuration calls **`docker` by default**. It does not silently
+fall back to Podman. See [Docker default and switching to Podman](.devcontainer/CONTAINER_ENGINE.md)
+for the two explicit Podman options and how to switch back.
+
+With the default `docker` command:
 
 - **Docker:** install Docker Engine with Compose v2 on Linux, or Docker Desktop
   on macOS/Windows.
@@ -572,7 +584,10 @@ The same devcontainer calls the **`docker` executable** for both engines:
 Verify `docker info` and `docker compose version` from the same environment where
 VS Code runs. Keep VS Code's **Dev Containers: Docker Path** set to `docker`.
 If `docker` points to Podman, no Docker daemon is required. Podman alone without
-the compatible CLI and Compose provider is not sufficient for this Compose setup.
+the compatible CLI and Compose provider is not sufficient for this default route.
+Alternatively, select `podman` in both VS Code's **Dev Containers: Docker Path**
+setting and the first entry of `initializeCommand`, as described in the linked
+guide; that route does not require a `docker` executable.
 
 Before Compose starts, `initializeCommand` runs a short-lived probe using the
 Python base image. It detects Podman from its container marker and examines the
@@ -689,7 +704,9 @@ old temporary files. Keep the uppercase course folder name; it is not the cause.
 
 - **`docker` or `docker compose` not found:** finish the engine's CLI/Compose
   setup, reopen the host terminal, and verify both commands from the environment
-  where VS Code runs. A Podman shell alias does not configure VS Code.
+  where VS Code runs. If you installed Podman, follow the [Podman switch guide](.devcontainer/CONTAINER_ENGINE.md#alternative-select-podman-explicitly):
+  both the VS Code setting and startup-hook command must select Podman. A shell
+  alias does not configure VS Code.
 - **Cannot connect to the engine:** start Docker Desktop, Docker Engine, or the
   Podman machine. Re-run `docker info` before reopening the folder in a container.
 - **Permission denied writing project files:** rebuild through VS Code so the
